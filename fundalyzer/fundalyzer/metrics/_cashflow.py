@@ -23,6 +23,8 @@ def compute_cashflow(
     fcf_margin: MetricSeries = []
     fcf_yield: MetricSeries = []
 
+    buybacks_series: MetricSeries = []
+
     for stmt in cashflow:
         kw = dict(period=stmt.period, period_date=stmt.report_date)
         revenue = rev_map.get(stmt.report_date, UNAVAILABLE)
@@ -55,10 +57,19 @@ def compute_cashflow(
             market_cap=market_cap,
             **kw,
         ))
+        # Buybacks: negative values mean cash outflow for repurchases (FMP convention)
+        buyback_val = stmt.buybacks if stmt.buybacks is not None else UNAVAILABLE
+        buybacks_series.append(passthrough(
+            buyback_val,
+            formula="common_stock_repurchased",
+            common_stock_repurchased=buyback_val,
+            **kw,
+        ))
 
     return CashFlowKPIs(
         operating_cash_flow=operating_cf,
         free_cash_flow=free_cf,
         fcf_margin=fcf_margin,
         fcf_yield=fcf_yield,
+        buybacks=buybacks_series,
     )

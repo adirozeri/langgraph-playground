@@ -6,7 +6,7 @@ from decimal import Decimal
 from enum import Enum
 from typing import Literal
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from ..data.models import UNAVAILABLE, Unavailable  # re-export for internal modules
 
@@ -56,6 +56,8 @@ class ProfitabilityKPIs(BaseModel):
     ebitda_margin: MetricSeries        # ebitda / revenue
     eps_diluted: MetricSeries          # directly from statements
     eps_growth_yoy: MetricSeries       # (eps_t − eps_t-1) / |eps_t-1|
+    # Single-point series; only current employee count available without a headcount endpoint
+    revenue_per_employee: MetricSeries = Field(default_factory=list)
 
 
 class ValuationKPIs(BaseModel):
@@ -67,6 +69,18 @@ class ValuationKPIs(BaseModel):
     ev_to_ebitda: MetricSeries    # (market_cap + total_debt − cash) / ttm_ebitda
     peg: MetricSeries             # trailing_pe / eps_growth_yoy (most recent annual)
     price_to_book: MetricSeries   # market_cap / total_equity (latest balance sheet)
+    # Additional multiples
+    ev_to_gross_profit: MetricSeries = Field(default_factory=list)  # EV / ttm_gross_profit
+    forward_revenue: MetricSeries = Field(default_factory=list)     # analyst revenue consensus
+    # Shadow P/E per historical year: current_price / period_eps_diluted (oldest-first)
+    # Useful for self-comparison: is today cheaper or richer than own earnings history?
+    historical_pe: MetricSeries = Field(default_factory=list)
+    # Analyst price target scalars (from PriceTargetConsensus)
+    price_target_consensus: MaybeDecimal = UNAVAILABLE
+    price_target_high: MaybeDecimal = UNAVAILABLE
+    price_target_low: MaybeDecimal = UNAVAILABLE
+    price_target_median: MaybeDecimal = UNAVAILABLE
+    price_upside: MaybeDecimal = UNAVAILABLE  # (consensus − current_price) / |current_price|
 
 
 class CashFlowKPIs(BaseModel):
@@ -74,6 +88,7 @@ class CashFlowKPIs(BaseModel):
     free_cash_flow: MetricSeries
     fcf_margin: MetricSeries   # fcf / revenue
     fcf_yield: MetricSeries    # fcf / market_cap  (single-point, current price)
+    buybacks: MetricSeries = Field(default_factory=list)  # share repurchase amounts (negative = outflow)
 
 
 class FinancialStrengthKPIs(BaseModel):

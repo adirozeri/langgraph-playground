@@ -3,10 +3,10 @@ from ..decide.models import InvestmentDecision
 from ..metrics.models import TickerKPIs
 from ..peers.models import PeerSet
 from ..dashboards.models import (
+    IncomeDashboard,
+    MomentumDashboard,
     ValuationDashboard,
-    GrowthDashboard,
-    HealthDashboard,
-    CompetitiveDashboard,
+    CapitalDashboard,
 )
 from ..interpret.models import Interpretation
 

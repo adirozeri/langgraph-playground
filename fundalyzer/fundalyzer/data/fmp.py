@@ -102,6 +102,11 @@ class FMPProvider(FinancialDataProvider):
         self._cache = cache or DiskCache()
         self._client = httpx.Client(base_url=self._base_url, timeout=30)
 
+    @property
+    def _v4_base(self) -> str:
+        """FMP v4 base URL derived from the configured v3 URL."""
+        return self._base_url.replace("/api/v3", "/api/v4").replace("/v3", "/v4")
+
     # ------------------------------------------------------------------
     # Internal HTTP + cache
     # ------------------------------------------------------------------
@@ -148,6 +153,7 @@ class FMPProvider(FinancialDataProvider):
             price=_dec(r.get("price")),
             description=r.get("description", ""),
             peer_symbols=[],  # fetched separately if needed
+            employees=int(r["fullTimeEmployees"]) if r.get("fullTimeEmployees") else None,
         )
 
     def _fetch_income(
@@ -380,9 +386,44 @@ class FMPProvider(FinancialDataProvider):
             ))
         return result
 
+    def _get_v4(self, path: str, ticker: str, cache_key: str, **params: Any) -> list | dict | None:
+        """GET from FMP v4 API with disk cache.  Returns None on premium gate."""
+        cached = self._cache.get(ticker, cache_key)
+        if cached is not None:
+            return cached
+
+        url = f"{self._v4_base}{path}"
+        try:
+            resp = httpx.get(url, params={"apikey": self._api_key, **params}, timeout=30)
+            if resp.status_code in _PREMIUM_CODES:
+                log.debug("FMP v4: premium endpoint %s (status %d)", path, resp.status_code)
+                return None
+            resp.raise_for_status()
+            data = resp.json()
+        except httpx.HTTPStatusError as exc:
+            if exc.response.status_code in _PREMIUM_CODES:
+                return None
+            raise
+
+        self._cache.set(ticker, cache_key, data)
+        return data
+
     # ------------------------------------------------------------------
     # Public interface
     # ------------------------------------------------------------------
+
+    def get_peer_tickers(self, ticker: str, max_peers: int = 10) -> list[str]:
+        """Return FMP's peer list for *ticker* via the v4 stock_peers endpoint.
+
+        Returns [] if the endpoint is gated (402/403) or returns no data.
+        Response is cached for the current calendar day.
+        """
+        ticker = ticker.upper()
+        raw = self._get_v4("/stock_peers", ticker, "stock_peers", symbol=ticker)
+        if not raw or not isinstance(raw, list):
+            return []
+        peers_raw = raw[0].get("peersList", []) if raw else []
+        return [t for t in peers_raw if t.upper() != ticker][:max_peers]
 
     def get_raw_financials(
         self,

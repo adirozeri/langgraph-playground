@@ -35,7 +35,7 @@ def compute(raw: RawFinancials) -> TickerKPIs:
     return TickerKPIs(
         ticker=raw.ticker,
         as_of=date.today(),
-        profitability_annual=compute_profitability(ann_inc),
+        profitability_annual=compute_profitability(ann_inc, employees=raw.profile.employees),
         profitability_quarterly=compute_profitability(qtr_inc),
         valuation=compute_valuation(
             profile=raw.profile,
@@ -43,6 +43,7 @@ def compute(raw: RawFinancials) -> TickerKPIs:
             annual_income=ann_inc,
             latest_balance=latest_annual_balance,
             estimates=raw.analyst_estimates,
+            price_target=raw.price_target,
         ),
         cash_flow_annual=compute_cashflow(ann_cf, ann_inc, raw.profile),
         cash_flow_quarterly=compute_cashflow(qtr_cf, qtr_inc, raw.profile),

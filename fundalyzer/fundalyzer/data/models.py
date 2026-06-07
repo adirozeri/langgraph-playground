@@ -23,6 +23,7 @@ class CompanyProfile(BaseModel):
     price: MaybeDecimal
     description: str = ""
     peer_symbols: list[str] = []
+    employees: int | None = None
 
 
 class IncomeStatement(BaseModel):

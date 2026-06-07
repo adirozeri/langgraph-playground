@@ -1,6 +1,8 @@
 # Architecture contract: pure Python arithmetic on API values — no LLM involvement.
 from __future__ import annotations
 
+from decimal import Decimal
+
 from ..data.models import IncomeStatement
 from ._helpers import passthrough, ratio, yoy
 from .models import MetricPoint, MetricSeries, ProfitabilityKPIs
@@ -16,6 +18,7 @@ def _kw(stmt: IncomeStatement) -> dict:
 
 def compute_profitability(
     statements: list[IncomeStatement],  # oldest-first
+    employees: int | None = None,
 ) -> ProfitabilityKPIs:
     """Compute all profitability KPIs for an ordered list of statements.
 
@@ -118,6 +121,24 @@ def compute_profitability(
                 **kw,
             ))
 
+    # Revenue per employee — single point using current employee count.
+    # Only the latest annual revenue is used; historical headcount is unavailable
+    # without a dedicated workforce-history endpoint.
+    rev_per_emp: MetricSeries = []
+    if statements and employees:
+        latest = statements[-1]
+        from .models import UNAVAILABLE as _U
+        from ._helpers import ratio as _ratio
+        rev_per_emp = [_ratio(
+            latest.revenue,
+            Decimal(str(employees)),
+            formula="revenue / employees",
+            period=_period(latest),
+            period_date=latest.report_date,
+            revenue=latest.revenue,
+            employees=employees,
+        )]
+
     return ProfitabilityKPIs(
         revenue=revenue,
         revenue_growth_yoy=revenue_growth_yoy,
@@ -127,4 +148,5 @@ def compute_profitability(
         ebitda_margin=ebitda_margin,
         eps_diluted=eps_diluted,
         eps_growth_yoy=eps_growth_yoy,
+        revenue_per_employee=rev_per_emp,
     )

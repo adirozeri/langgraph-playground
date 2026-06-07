@@ -1,9 +1,27 @@
-from .models import PeerSet, PeerMetrics, SectorMedian
-from ..data.base import FinancialDataProvider
+from .build import build
+from .models import (
+    KPIComparison,
+    PeerComparisons,
+    PeerMetrics,
+    PeerSet,
+    RelativePosition,
+    SectorMedian,
+)
+from ._stats import median, percentile_rank, relative_position
+from ._extract import KPI_CATALOG, KPISpec, extract_kpi_values
 
-__all__ = ["PeerSet", "PeerMetrics", "SectorMedian", "aggregate"]
-
-
-def aggregate(tickers: list[str], provider: FinancialDataProvider, years: int = 5) -> PeerSet:
-    """Fetch raw financials for each peer, compute their KPIs, and derive sector medians."""
-    raise NotImplementedError
+__all__ = [
+    "build",
+    "KPIComparison",
+    "PeerComparisons",
+    "PeerMetrics",
+    "PeerSet",
+    "RelativePosition",
+    "SectorMedian",
+    "median",
+    "percentile_rank",
+    "relative_position",
+    "KPI_CATALOG",
+    "KPISpec",
+    "extract_kpi_values",
+]

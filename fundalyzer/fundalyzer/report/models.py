@@ -1,10 +1,10 @@
 from datetime import datetime
 from pydantic import BaseModel
 from ..dashboards.models import (
+    IncomeDashboard,
+    MomentumDashboard,
     ValuationDashboard,
-    GrowthDashboard,
-    HealthDashboard,
-    CompetitiveDashboard,
+    CapitalDashboard,
 )
 from ..interpret.models import Interpretation
 from ..decide.models import InvestmentDecision
@@ -13,10 +13,10 @@ from ..decide.models import InvestmentDecision
 class DeepDiveReport(BaseModel):
     ticker: str
     generated_at: datetime
+    income: IncomeDashboard
+    momentum: MomentumDashboard
     valuation: ValuationDashboard
-    growth: GrowthDashboard
-    health: HealthDashboard
-    competitive: CompetitiveDashboard
+    capital: CapitalDashboard
     interpretation: Interpretation
     decision: InvestmentDecision
 

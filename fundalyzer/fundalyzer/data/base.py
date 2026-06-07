@@ -29,3 +29,12 @@ class FinancialDataProvider(ABC):
             Never a fabricated zero or estimate.
         """
         ...
+
+    def get_peer_tickers(self, ticker: str, max_peers: int = 10) -> list[str]:
+        """Return comparable tickers for *ticker*.
+
+        Override in providers that support a peer-list endpoint.
+        The default returns an empty list so callers can always call this
+        without checking whether the provider implements it.
+        """
+        return []
