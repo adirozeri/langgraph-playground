@@ -1,0 +1,30 @@
+[
+  {
+    "date": "2024-09-28",
+    "symbol": "AAPL",
+    "reportedCurrency": "USD",
+    "calendarYear": "2024",
+    "period": "FY",
+    "netCashProvidedByOperatingActivities": 108807000000,
+    "capitalExpenditure": -9447000000,
+    "stockBasedCompensation": 11688000000,
+    "commonStockRepurchased": -94949000000,
+    "dividendsPaid": -15234000000,
+    "freeCashFlow": 99360000000,
+    "operatingCashFlow": 108807000000
+  },
+  {
+    "date": "2023-09-30",
+    "symbol": "AAPL",
+    "reportedCurrency": "USD",
+    "calendarYear": "2023",
+    "period": "FY",
+    "netCashProvidedByOperatingActivities": 110543000000,
+    "capitalExpenditure": -11085000000,
+    "stockBasedCompensation": 10833000000,
+    "commonStockRepurchased": -77550000000,
+    "dividendsPaid": -15025000000,
+    "freeCashFlow": 99458000000,
+    "operatingCashFlow": 110543000000
+  }
+]

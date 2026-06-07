@@ -1,0 +1,21 @@
+[
+  {
+    "symbol": "AAPL",
+    "price": 229.87,
+    "mktCap": 3484543880000,
+    "companyName": "Apple Inc.",
+    "currency": "USD",
+    "cik": "0000320193",
+    "exchange": "NASDAQ Global Select",
+    "exchangeShortName": "NASDAQ",
+    "industry": "Consumer Electronics",
+    "website": "https://www.apple.com",
+    "description": "Apple Inc. designs, manufactures, and markets smartphones, personal computers, tablets, wearables, and accessories worldwide.",
+    "ceo": "Mr. Timothy D. Cook",
+    "sector": "Technology",
+    "country": "US",
+    "fullTimeEmployees": "150000",
+    "ipoDate": "1980-12-12",
+    "isActivelyTrading": true
+  }
+]

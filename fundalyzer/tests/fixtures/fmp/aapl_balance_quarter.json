@@ -1,0 +1,25 @@
+[
+  {
+    "date": "2024-09-28",
+    "symbol": "AAPL",
+    "reportedCurrency": "USD",
+    "calendarYear": "2024",
+    "period": "Q4",
+    "cashAndCashEquivalents": 29943000000,
+    "shortTermInvestments": 35228000000,
+    "netReceivables": 33410000000,
+    "inventory": 7286000000,
+    "totalCurrentAssets": 152987000000,
+    "goodwill": 0,
+    "intangibleAssets": 0,
+    "totalAssets": 364750000000,
+    "totalCurrentLiabilities": 176392000000,
+    "longTermDebt": 85750000000,
+    "totalLiabilities": 308081000000,
+    "retainedEarnings": -19154000000,
+    "totalStockholdersEquity": 56269000000,
+    "totalEquity": 56269000000,
+    "totalDebt": 106629000000,
+    "netDebt": 76686000000
+  }
+]
