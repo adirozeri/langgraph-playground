@@ -1,0 +1,6 @@
+{
+    "dependencies": ["."],
+    "graphs": {
+        "youtube_searcher": "./agent/graph.py:build_graph"
+    }
+}

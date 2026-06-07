@@ -1,0 +1,19 @@
+.env
+.env.*
+*.env
+.lang-env/
+__pycache__/
+*.pyc
+.DS_Store
+
+# Runtime / state
+.langgraph_api/
+*.pckl
+
+# Databases & vector stores
+*.db
+*.sqlite3
+my_chroma_db/
+
+# Binaries
+*.deb
