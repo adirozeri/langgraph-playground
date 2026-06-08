@@ -30,7 +30,9 @@ def _dec(val: Any) -> MaybeDecimal:
     if val is None:
         return UNAVAILABLE
     try:
-        return Decimal(str(val))
+        d = Decimal(str(val))
+        # NaN and Infinity are valid Decimal objects but pydantic rejects them.
+        return d if d.is_finite() else UNAVAILABLE
     except (InvalidOperation, ValueError):
         return UNAVAILABLE
 
@@ -39,7 +41,8 @@ def _dec_opt(val: Any) -> Decimal | None:
     if val is None:
         return None
     try:
-        return Decimal(str(val))
+        d = Decimal(str(val))
+        return d if d.is_finite() else None
     except (InvalidOperation, ValueError):
         return None
 

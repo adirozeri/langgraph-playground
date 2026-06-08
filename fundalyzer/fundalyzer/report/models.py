@@ -1,16 +1,34 @@
+from __future__ import annotations
+
 from datetime import datetime
+
 from pydantic import BaseModel
+
 from ..dashboards.models import (
+    CapitalDashboard,
     IncomeDashboard,
     MomentumDashboard,
     ValuationDashboard,
-    CapitalDashboard,
 )
-from ..interpret.models import Interpretation
 from ..decide.models import InvestmentDecision
+from ..interpret.models import Interpretation
+
+
+class SnapshotReport(BaseModel):
+    """All data needed for the fast one-page terminal snapshot."""
+
+    ticker: str
+    generated_at: datetime
+    income: IncomeDashboard
+    momentum: MomentumDashboard
+    valuation: ValuationDashboard
+    capital: CapitalDashboard
+    decision: InvestmentDecision
 
 
 class DeepDiveReport(BaseModel):
+    """Full analysis — every KPI with provenance, narrative, and decision rationale."""
+
     ticker: str
     generated_at: datetime
     income: IncomeDashboard
@@ -19,10 +37,3 @@ class DeepDiveReport(BaseModel):
     capital: CapitalDashboard
     interpretation: Interpretation
     decision: InvestmentDecision
-
-
-class SnapshotReport(BaseModel):
-    ticker: str
-    generated_at: datetime
-    decision: InvestmentDecision
-    one_liner: str  # LLM narrative that references decision.scorecard — no invented numbers

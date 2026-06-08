@@ -160,6 +160,12 @@ class CompositeProvider(FinancialDataProvider):
         quarters: int = 12,
         annual_years: int = 10,
     ) -> RawFinancials:
-        fmp_data = self._fmp.get_raw_financials(ticker, quarters, annual_years)
+        import logging
+        log = logging.getLogger(__name__)
+        try:
+            fmp_data = self._fmp.get_raw_financials(ticker, quarters, annual_years)
+        except Exception as exc:
+            log.warning("FMP failed for %s (%s); falling back to yfinance only", ticker, exc)
+            return self._yf.get_raw_financials(ticker, quarters, annual_years)
         yf_data = self._yf.get_raw_financials(ticker, quarters, annual_years)
         return merge(fmp_data, yf_data)

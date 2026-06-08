@@ -29,7 +29,9 @@ from .models import (
 
 log = logging.getLogger(__name__)
 
-_PREMIUM_CODES = {402, 403}
+# 401 = invalid/missing key; treat the same as 402/403 so the pipeline
+# can fall back to yfinance instead of crashing.
+_PREMIUM_CODES = {401, 402, 403}
 
 
 # ---------------------------------------------------------------------------

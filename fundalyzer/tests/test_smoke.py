@@ -64,9 +64,7 @@ def test_investment_lean_values():
     from fundalyzer.decide.models import InvestmentLean
 
     assert set(InvestmentLean) == {
-        InvestmentLean.STRONG_BUY,
-        InvestmentLean.BUY,
+        InvestmentLean.INVEST,
         InvestmentLean.HOLD,
-        InvestmentLean.SELL,
-        InvestmentLean.STRONG_SELL,
+        InvestmentLean.AVOID,
     }

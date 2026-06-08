@@ -39,16 +39,21 @@ __all__ = [
 def _parse_narrative(raw: dict[str, Any]) -> DashboardNarrative:
     claims = [
         Claim(
-            statement=c["statement"],
+            statement=c.get("statement", ""),
             data_points=c.get("data_points", []),
         )
         for c in raw.get("claims", [])
+        if isinstance(c, dict)
     ]
+    # trend_verdict may be absent if the model skipped it; default to STABLE.
+    verdict = raw.get("trend_verdict", "STABLE")
+    if verdict not in ("IMPROVING", "DETERIORATING", "STABLE", "MIXED"):
+        verdict = "STABLE"
     return DashboardNarrative(
-        headline=raw["headline"],
-        body=raw["body"],
+        headline=raw.get("headline", ""),
+        body=raw.get("body", ""),
         claims=claims,
-        trend_verdict=raw["trend_verdict"],
+        trend_verdict=verdict,
     )
 
 

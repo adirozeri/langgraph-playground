@@ -48,3 +48,24 @@ class NullCache:
 
     def set(self, ticker: str, endpoint: str, data: Any) -> None:
         pass
+
+
+class ReadonlyCache:
+    """Dry-run cache — reads from an underlying cache, never fetches live.
+
+    Raises NoCachedDataError when the requested data is not cached, so
+    the caller can surface a helpful message instead of making a live request.
+    """
+
+    def __init__(self, inner: DiskCache) -> None:
+        self._inner = inner
+
+    def get(self, ticker: str, endpoint: str) -> Any | None:
+        data = self._inner.get(ticker, endpoint)
+        if data is None:
+            from .errors import NoCachedDataError
+            raise NoCachedDataError(ticker, endpoint)
+        return data
+
+    def set(self, ticker: str, endpoint: str, data: Any) -> None:
+        pass  # dry-run: never write
