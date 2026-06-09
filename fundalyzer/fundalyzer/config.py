@@ -23,6 +23,8 @@ Config format (TOML):
 """
 from __future__ import annotations
 
+import json
+import os
 import sys
 from pathlib import Path
 from typing import Any
@@ -127,14 +129,44 @@ class FundalyzerConfig:
 _EMPTY = FundalyzerConfig({})
 
 
+def _groups_from_env() -> dict[str, list[str]]:
+    """Parse FUNDALYZER_GROUPS env var.
+
+    Format: JSON object mapping group name to ticker list.
+    Example: {"big_tech": ["AAPL","MSFT","GOOGL"], "ev": ["TSLA","RIVN"]}
+    Returns empty dict if the var is absent or malformed.
+    """
+    raw = os.environ.get("FUNDALYZER_GROUPS", "")
+    if not raw:
+        return {}
+    try:
+        data = json.loads(raw)
+        return {k.lower(): [t.upper() for t in v] for k, v in data.items()}
+    except Exception:
+        return {}
+
+
 def load_config(path: Path | None = None) -> FundalyzerConfig:
-    """Load and return the first config file found, or an empty config."""
+    """Load config from file, then overlay groups from FUNDALYZER_GROUPS env var.
+
+    Env var groups take precedence over file groups with the same name so that
+    Railway deployments (where the TOML file is ephemeral) always have the
+    configured groups available.
+    """
     candidates = [path] if path is not None else _CONFIG_SEARCH_PATHS
+    raw: dict[str, Any] = {}
     for candidate in candidates:
         if candidate and candidate.exists():
             try:
                 raw = _load_toml(candidate)
-                return FundalyzerConfig(raw)
+                break
             except Exception:
                 pass
-    return _EMPTY
+
+    env_groups = _groups_from_env()
+    if env_groups:
+        file_groups = {k.lower(): v for k, v in raw.get("groups", {}).items()}
+        file_groups.update(env_groups)   # env wins on conflict
+        raw = {**raw, "groups": file_groups}
+
+    return FundalyzerConfig(raw) if raw else _EMPTY
