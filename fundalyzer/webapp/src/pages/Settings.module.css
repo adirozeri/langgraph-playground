@@ -1,4 +1,0 @@
-.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); gap: 16px; }
-.cardTitle { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-dim); margin-bottom: 10px; }
-.form { display: flex; flex-direction: column; gap: 10px; }
-.formRow { display: flex; justify-content: space-between; align-items: center; font-size: 13px; }
