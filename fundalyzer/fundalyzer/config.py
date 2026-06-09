@@ -27,6 +27,12 @@ import sys
 from pathlib import Path
 from typing import Any
 
+try:
+    import tomli_w  # type: ignore[import]
+    _HAS_TOMLI_W = True
+except ImportError:
+    _HAS_TOMLI_W = False
+
 _CONFIG_SEARCH_PATHS = [
     Path("fundalyzer.toml"),
     Path.home() / ".config" / "fundalyzer" / "config.toml",
@@ -88,6 +94,34 @@ class FundalyzerConfig:
     def all_groups(self) -> dict[str, list[str]]:
         return {k: [t.upper() for t in v]
                 for k, v in self._raw.get("groups", {}).items()}
+
+    # ── Mutators ──────────────────────────────────────────────────────────────
+
+    def add_group(self, name: str, tickers: list[str]) -> None:
+        """Insert or replace a named group.  Changes are in-memory until save()."""
+        groups = self._raw.setdefault("groups", {})
+        groups[name.lower()] = [t.upper() for t in tickers]
+
+    def remove_group(self, name: str) -> None:
+        """Remove a named group.  No-op if it does not exist."""
+        self._raw.get("groups", {}).pop(name.lower(), None)
+
+    def set_default_years(self, years: int) -> None:
+        """Update the default years setting in memory."""
+        self._raw.setdefault("defaults", {})["years"] = int(years)
+
+    def save(self, path: Path) -> None:
+        """Write the current in-memory config back to *path* as TOML.
+
+        Requires the ``tomli-w`` package.  Raises RuntimeError if not installed.
+        """
+        if not _HAS_TOMLI_W:
+            raise RuntimeError(
+                "tomli-w is required to save config. "
+                "Install it with: pip install tomli-w"
+            )
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_bytes(tomli_w.dumps(self._raw).encode())
 
 
 _EMPTY = FundalyzerConfig({})

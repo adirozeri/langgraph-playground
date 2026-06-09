@@ -1,0 +1,28 @@
+.layout { display: flex; gap: 20px; }
+.sidebar {
+  width: 180px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.sidebarTitle {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+  padding: 4px 8px 8px;
+}
+.groupBtn {
+  text-align: left;
+  background: transparent;
+  color: var(--text-dim);
+  border-radius: var(--radius);
+  padding: 7px 10px;
+  font-size: 13px;
+  border: none;
+}
+.groupBtn:hover { background: var(--surface); color: var(--text); }
+.groupBtnActive { background: var(--surface-2) !important; color: var(--blue) !important; font-weight: 600; }
+.main { flex: 1; min-width: 0; }

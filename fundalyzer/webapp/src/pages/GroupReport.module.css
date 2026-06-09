@@ -1,0 +1,6 @@
+.tabs { display: flex; gap: 4px; margin-bottom: 16px; border-bottom: 1px solid var(--border); padding-bottom: 0; }
+.tab { background: transparent; color: var(--text-dim); border-radius: 0; padding: 8px 14px; font-size: 13px; border-bottom: 2px solid transparent; }
+.tab:hover { color: var(--text); }
+.tabActive { color: var(--blue) !important; border-bottom-color: var(--blue) !important; }
+.content { }
+.summaries { display: flex; flex-direction: column; gap: 8px; }

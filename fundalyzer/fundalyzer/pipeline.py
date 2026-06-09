@@ -11,6 +11,7 @@ AnalysisResult that carries all intermediate outputs for debugging.
 from __future__ import annotations
 
 import logging
+from collections.abc import Callable
 from dataclasses import dataclass
 
 import httpx
@@ -61,6 +62,20 @@ class AnalysisResult:
     deep_dive: DeepDiveReport
 
 
+ProgressCallback = Callable[[str, str], None]
+"""Callback type: (ticker, step) → None.
+
+step values emitted during a run:
+  "fetching_data"       layer 1 complete
+  "computing_kpis"      layer 2 complete
+  "building_peers"      layer 3 complete
+  "building_dashboards" layer 4 complete
+  "interpreting"        layer 5 complete
+  "deciding"            layer 6 complete
+  "done"                all layers complete
+"""
+
+
 def run_analysis(
     ticker: str,
     provider: FinancialDataProvider,
@@ -71,17 +86,22 @@ def run_analysis(
     peer_set: PeerSet | None = None,
     model: str = DEFAULT_MODEL,
     messages_api: MessagesAPI | None = None,
+    progress_callback: ProgressCallback | None = None,
 ) -> AnalysisResult:
     """Run the full fundalyzer pipeline for *ticker*.
 
     Args:
-        ticker:       Target ticker symbol (case-insensitive).
-        provider:     Financial data provider (FMP, Composite, etc.).
-        peers:        Explicit peer list.  None → derive from provider.
-        annual_years: Years of annual statement history to fetch.
-        quarters:     Quarters of history to fetch.
-        model:        Claude model ID for the interpret/decide LLM calls.
-        messages_api: Injectable Anthropic messages object (for testing).
+        ticker:            Target ticker symbol (case-insensitive).
+        provider:          Financial data provider (FMP, Composite, etc.).
+        peers:             Explicit peer list.  None → derive from provider.
+        annual_years:      Years of annual statement history to fetch.
+        quarters:          Quarters of history to fetch.
+        peer_set:          Pre-built peer set; skips layer 3 when supplied.
+        model:             Claude model ID for the interpret/decide LLM calls.
+        messages_api:      Injectable Anthropic messages object (for testing).
+        progress_callback: Optional (ticker, step) → None called after each
+                           layer.  The CLI passes None; the FastAPI SSE route
+                           passes a function that pushes events to the browser.
 
     Returns:
         AnalysisResult containing every intermediate output.
@@ -91,6 +111,10 @@ def run_analysis(
             ticker and no cached data is available.
         NoCachedDataError: if --dry-run was requested and data is not cached.
     """
+    def _emit(step: str) -> None:
+        if progress_callback is not None:
+            progress_callback(ticker, step)
+
     ticker = ticker.upper()
     log.info("Starting analysis for %s (years=%d, peers=%s)", ticker, annual_years, peers)
 
@@ -106,14 +130,15 @@ def run_analysis(
         raise ProviderUnavailableError(
             ticker, type(provider).__name__, f"Connection failed: {exc}"
         ) from exc
+    _emit("fetching_data")
 
     # ── Layer 2: metrics ──────────────────────────────────────────────────────
     log.debug("Computing KPIs for %s", ticker)
     kpis = compute(raw)
+    _emit("computing_kpis")
 
     # ── Layer 3: peers ────────────────────────────────────────────────────────
     if peer_set is not None:
-        # Pre-built peer set supplied by caller (e.g. analyze-group reuses one fetch).
         log.debug("Using pre-built peer set for %s (%d peers)", ticker, len(peer_set.peers))
     else:
         log.debug("Building peer set for %s", ticker)
@@ -139,10 +164,12 @@ def run_analysis(
                 sector_medians=sm,
                 comparisons=cmp,
             )
+    _emit("building_peers")
 
     # ── Layer 4: dashboards ───────────────────────────────────────────────────
     log.debug("Assembling dashboards for %s", ticker)
     income, momentum, valuation, capital = build_dashboards(kpis, peer_set)
+    _emit("building_dashboards")
 
     # ── Layer 5: interpret ────────────────────────────────────────────────────
     log.info("Calling LLM for interpretations (4 structured + 1 synthesis)")
@@ -151,6 +178,7 @@ def run_analysis(
         model=model,
         messages_api=messages_api,
     )
+    _emit("interpreting")
 
     # ── Layer 6: decide ───────────────────────────────────────────────────────
     log.info("Computing investment decision for %s", ticker)
@@ -159,6 +187,7 @@ def run_analysis(
         model=model,
         messages_api=messages_api,
     )
+    _emit("deciding")
 
     # ── Layer 7: report ───────────────────────────────────────────────────────
     snapshot = build_snapshot_report(income, momentum, valuation, capital, decision)
@@ -167,6 +196,7 @@ def run_analysis(
     )
 
     log.info("Analysis complete for %s — lean: %s", ticker, decision.lean.value)
+    _emit("done")
 
     return AnalysisResult(
         ticker=ticker,

@@ -23,6 +23,13 @@ dev = [
     "pytest>=8",
     "ruff>=0.4",
 ]
+api = [
+    "fastapi>=0.111",
+    "uvicorn[standard]>=0.29",
+    "apscheduler>=3.10",
+    "tomli-w>=1.0",
+    "filelock>=3.13",
+]
 
 [project.scripts]
 fundalyzer = "fundalyzer.cli:app"

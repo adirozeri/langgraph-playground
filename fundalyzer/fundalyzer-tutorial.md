@@ -881,3 +881,65 @@ The guardrail tests in `tests/test_guardrail.py` enforce this rule in the test s
 - LLM output is stored only in `str` fields — it can never populate a `Decimal` field
 - Every number in the rendered Markdown is traced to the data corpus within display-rounding tolerance
 - A "rogue number" test verifies that an LLM hallucinating a fake number cannot contaminate any Python-computed field in the report
+
+---
+
+## Web App
+
+Fundalyzer includes a browser-based dashboard built on **FastAPI + React (Vite)**.
+It runs the same pipeline as the CLI, adds daily scheduling, and lets you manage
+groups and trigger analyses from the browser.
+
+### Prerequisites
+
+- Python dependencies: `pip install -e ".[api]"` (or `make install`)
+- Node.js 18+ for the frontend build
+
+### Development mode
+
+```bash
+make install   # first time only
+make dev       # starts API on :8000 + Vite dev server on :5173
+```
+
+Open `http://localhost:5173` in Chrome. The Vite dev server proxies all
+`/api/*` requests to the FastAPI backend automatically.
+
+### Production mode
+
+```bash
+make build     # compiles React into webapp/dist/
+make start     # FastAPI serves the bundle on http://localhost:8000
+```
+
+### What the web app provides
+
+| Page | Route | What it shows |
+|------|-------|---------------|
+| Dashboard | `/` | Group selector sidebar + leaderboard table for the selected group |
+| Group Report | `/groups/:name` | Leaderboard · KPI comparison · Company summaries (tabbed) |
+| Company Detail | `/groups/:name/company/:ticker` | Full scorecard, valuation, signals, projection, rationale |
+| Settings | `/settings` | API key status, scheduler config, group management |
+
+### Running an analysis from the UI
+
+1. Open the Dashboard and select a group from the sidebar.
+2. Click **Run now** — a progress panel appears showing live per-ticker progress.
+3. When done, the leaderboard updates automatically.
+
+The same run happens automatically every morning at 07:00 local time (configurable
+in Settings or via `SCHEDULER_HOUR` / `SCHEDULER_MINUTE` env vars).
+
+### API docs
+
+FastAPI's interactive docs are available at `http://localhost:8000/api/docs` while
+the server is running.
+
+### Environment variables (web app specific)
+
+| Variable | Default | Purpose |
+|---|---|---|
+| `SCHEDULER_ENABLED` | `true` | Set to `false` to disable the daily auto-run |
+| `SCHEDULER_HOUR` | `7` | Hour (0–23) for the daily run |
+| `SCHEDULER_MINUTE` | `0` | Minute (0–59) for the daily run |
+| `FUNDALYZER_RESULTS_DIR` | `~/.local/share/fundalyzer/results` | Where group report JSON files are stored |
