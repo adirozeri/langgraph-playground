@@ -1,0 +1,9 @@
+webapp/node_modules
+webapp/dist
+**/__pycache__
+**/*.pyc
+.git
+*.md
+*.txt
+reports/
+.env
